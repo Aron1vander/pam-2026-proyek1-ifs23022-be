@@ -18,8 +18,9 @@ class MatchDAO(id: EntityID<UUID>) : Entity<UUID>(id) {
     var opponentScore by MatchTable.opponentScore
     var result        by MatchTable.result
     var opponentLogo  by MatchTable.opponentLogo
-    var myLogo        by MatchTable.myLogo             // ← tambah
+    var myLogo        by MatchTable.myLogo
 
+    // Tim Sendiri
     var goals            by MatchTable.goals
     var assists          by MatchTable.assists
     var shots            by MatchTable.shots
@@ -46,7 +47,36 @@ class MatchDAO(id: EntityID<UUID>) : Entity<UUID>(id) {
     var blocks           by MatchTable.blocks
     var turnovers        by MatchTable.turnovers
     var threePointers    by MatchTable.threePointers
-    var notes            by MatchTable.notes
-    var createdAt        by MatchTable.createdAt
-    var updatedAt        by MatchTable.updatedAt
+
+    // Lawan
+    var oppGoals            by MatchTable.oppGoals
+    var oppAssists          by MatchTable.oppAssists
+    var oppShots            by MatchTable.oppShots
+    var oppShotsOnTarget    by MatchTable.oppShotsOnTarget
+    var oppBigChances       by MatchTable.oppBigChances
+    var oppBigChancesMissed by MatchTable.oppBigChancesMissed
+    var oppTackles          by MatchTable.oppTackles
+    var oppInterceptions    by MatchTable.oppInterceptions
+    var oppClearances       by MatchTable.oppClearances
+    var oppSaves            by MatchTable.oppSaves
+    var oppBlockedShots     by MatchTable.oppBlockedShots
+    var oppFouls            by MatchTable.oppFouls
+    var oppYellowCards      by MatchTable.oppYellowCards
+    var oppRedCards         by MatchTable.oppRedCards
+    var oppOffsides         by MatchTable.oppOffsides
+    var oppPossession       by MatchTable.oppPossession
+    var oppPassAccuracy     by MatchTable.oppPassAccuracy
+    var oppTotalPasses      by MatchTable.oppTotalPasses
+    var oppCorners          by MatchTable.oppCorners
+    var oppDribbles         by MatchTable.oppDribbles
+    var oppAerialDuelsWon   by MatchTable.oppAerialDuelsWon
+    var oppRebounds         by MatchTable.oppRebounds
+    var oppSteals           by MatchTable.oppSteals
+    var oppBlocks           by MatchTable.oppBlocks
+    var oppTurnovers        by MatchTable.oppTurnovers
+    var oppThreePointers    by MatchTable.oppThreePointers
+
+    var notes     by MatchTable.notes
+    var createdAt by MatchTable.createdAt
+    var updatedAt by MatchTable.updatedAt
 }
