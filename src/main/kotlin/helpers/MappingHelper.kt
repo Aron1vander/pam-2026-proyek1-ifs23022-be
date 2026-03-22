@@ -14,14 +14,16 @@ suspend fun <T> suspendTransaction(block: Transaction.() -> T): T =
     newSuspendedTransaction(Dispatchers.IO, statement = block)
 
 fun userDAOToModel(dao: UserDAO, baseUrl: String) = User(
-    id        = dao.id.value.toString(),
-    name      = dao.name,
-    username  = dao.username,
-    password  = dao.password,
-    photo     = dao.photo,
-    urlPhoto  = buildImageUrl(baseUrl, dao.photo ?: "/uploads/defaults/user.png"),
-    createdAt = dao.createdAt,
-    updatedAt = dao.updatedAt,
+    id           = dao.id.value.toString(),
+    name         = dao.name,
+    username     = dao.username,
+    password     = dao.password,
+    photo        = dao.photo,
+    urlPhoto     = buildImageUrl(baseUrl, dao.photo ?: "/uploads/defaults/user.png"),
+    teamLogo     = dao.teamLogo,
+    urlTeamLogo  = if (dao.teamLogo != null) buildImageUrl(baseUrl, dao.teamLogo!!) else "",
+    createdAt    = dao.createdAt,
+    updatedAt    = dao.updatedAt,
 )
 
 fun refreshTokenDAOToModel(dao: RefreshTokenDAO) = RefreshToken(
@@ -32,7 +34,7 @@ fun refreshTokenDAOToModel(dao: RefreshTokenDAO) = RefreshToken(
     createdAt    = dao.createdAt,
 )
 
-fun matchDAOToModel(dao: MatchDAO) = Match(
+fun matchDAOToModel(dao: MatchDAO, baseUrl: String) = Match(
     id               = dao.id.value.toString(),
     userId           = dao.userId.toString(),
     opponent         = dao.opponent,
@@ -42,6 +44,10 @@ fun matchDAOToModel(dao: MatchDAO) = Match(
     myScore          = dao.myScore,
     opponentScore    = dao.opponentScore,
     result           = dao.result,
+    opponentLogo     = dao.opponentLogo,
+    urlOpponentLogo  = if (dao.opponentLogo != null) buildImageUrl(baseUrl, dao.opponentLogo!!) else "",
+    myLogo           = dao.myLogo,
+    urlMyLogo        = if (dao.myLogo != null) buildImageUrl(baseUrl, dao.myLogo!!) else "",
     goals            = dao.goals,
     assists          = dao.assists,
     shots            = dao.shots,

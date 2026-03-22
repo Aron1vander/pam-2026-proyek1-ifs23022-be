@@ -11,56 +11,47 @@ import java.util.UUID
 data class Match(
     var id: String = UUID.randomUUID().toString(),
     var userId: String,
-
-    // ── Info Umum ──────────────────────────────────────────────────────────
     var opponent: String,
-    var venue: String = "",                 // Lokasi pertandingan (opsional)
-    var sport: String = "football",         // "football" | "basketball"
+    var venue: String = "",
+    var sport: String = "football",
 
     @Contextual
     var matchDate: LocalDate,
 
     var myScore: Int = 0,
     var opponentScore: Int = 0,
-    var result: String = "",                // "W" / "L" / "D" — dihitung otomatis
+    var result: String = "",
+    var opponentLogo: String? = null,
+    var urlOpponentLogo: String = "",
+    var myLogo: String? = null,           // ← override logo tim per match
+    var urlMyLogo: String = "",           // ← URL publik logo tim per match
 
-    // ── Statistik Serangan ─────────────────────────────────────────────────
-    var goals: Int = 0,                     // Gol / poin yang dicetak
-    var assists: Int = 0,                   // Assist
-    var shots: Int = 0,                     // Total tembakan
-    var shotsOnTarget: Int = 0,             // Tembakan tepat sasaran
-    var bigChances: Int = 0,                // Peluang emas
-    var bigChancesMissed: Int = 0,          // Peluang emas terbuang
-
-    // ── Statistik Bertahan ─────────────────────────────────────────────────
-    var tackles: Int = 0,                   // Tekel
-    var interceptions: Int = 0,            // Intersep
-    var clearances: Int = 0,               // Sapuan bola
-    var saves: Int = 0,                    // Penyelamatan kiper
-    var blockedShots: Int = 0,             // Tembakan yang diblok
-
-    // ── Disiplin ───────────────────────────────────────────────────────────
-    var fouls: Int = 0,                    // Pelanggaran
-    var yellowCards: Int = 0,             // Kartu kuning
-    var redCards: Int = 0,                // Kartu merah
-    var offsides: Int = 0,               // Offside
-
-    // ── Penguasaan & Passing ───────────────────────────────────────────────
-    var possession: Int = 0,               // Penguasaan bola (0–100 %)
-    var passAccuracy: Int = 0,             // Akurasi umpan (0–100 %)
-    var totalPasses: Int = 0,              // Total umpan
-    var corners: Int = 0,                  // Tendangan sudut
-    var dribbles: Int = 0,                 // Dribel berhasil
-    var aerialDuelsWon: Int = 0,           // Duel udara menang
-
-    // ── Khusus Basketball ─────────────────────────────────────────────────
-    var rebounds: Int = 0,                 // Rebound
-    var steals: Int = 0,                   // Steal
-    var blocks: Int = 0,                   // Blok
-    var turnovers: Int = 0,                // Turnover
-    var threePointers: Int = 0,            // Tembakan 3 poin masuk
-
-    // ── Catatan ────────────────────────────────────────────────────────────
+    var goals: Int = 0,
+    var assists: Int = 0,
+    var shots: Int = 0,
+    var shotsOnTarget: Int = 0,
+    var bigChances: Int = 0,
+    var bigChancesMissed: Int = 0,
+    var tackles: Int = 0,
+    var interceptions: Int = 0,
+    var clearances: Int = 0,
+    var saves: Int = 0,
+    var blockedShots: Int = 0,
+    var fouls: Int = 0,
+    var yellowCards: Int = 0,
+    var redCards: Int = 0,
+    var offsides: Int = 0,
+    var possession: Int = 0,
+    var passAccuracy: Int = 0,
+    var totalPasses: Int = 0,
+    var corners: Int = 0,
+    var dribbles: Int = 0,
+    var aerialDuelsWon: Int = 0,
+    var rebounds: Int = 0,
+    var steals: Int = 0,
+    var blocks: Int = 0,
+    var turnovers: Int = 0,
+    var threePointers: Int = 0,
     var notes: String = "",
 
     @Contextual

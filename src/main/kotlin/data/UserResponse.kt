@@ -9,6 +9,8 @@ data class UserResponse(
     var id: String = "",
     var name: String = "",
     var username: String = "",
+    var urlPhoto: String = "",
+    var urlTeamLogo: String = "",     // ← URL logo tim global
     var createdAt: Instant = Clock.System.now(),
     var updatedAt: Instant = Clock.System.now(),
 )

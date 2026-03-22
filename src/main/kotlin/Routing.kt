@@ -35,21 +35,14 @@ fun Application.configureRouting() {
         exception<Throwable> { call, cause ->
             call.respond(
                 status = HttpStatusCode.fromValue(500),
-                message = ErrorResponse(
-                    status  = "error",
-                    message = cause.message ?: "Unknown error",
-                    data    = ""
-                )
+                message = ErrorResponse(status = "error", message = cause.message ?: "Unknown error", data = "")
             )
         }
     }
 
     routing {
-        get("/") {
-            call.respondText("Match Statistics Log API by 11S23022 Aron Ivander Jeconia Hutapea — berjalan normal.")
-        }
+        get("/") { call.respondText("Match Statistics Log (MatchUp) API by Aron Ivander  — berjalan normal.") }
 
-        // ── Auth ──────────────────────────────────────────────────────────
         route("/auth") {
             post("/register")      { authService.postRegister(call) }
             post("/login")         { authService.postLogin(call) }
@@ -58,31 +51,25 @@ fun Application.configureRouting() {
         }
 
         authenticate(JWTConstants.NAME) {
-
-            // ── Users ─────────────────────────────────────────────────────
             route("/users") {
-                get("/me")           { userService.getMe(call) }
-                put("/me")           { userService.putMe(call) }
-                put("/me/password")  { userService.putMyPassword(call) }
-                put("/me/photo")     { userService.putMyPhoto(call) }
+                get("/me")              { userService.getMe(call) }
+                put("/me")              { userService.putMe(call) }
+                put("/me/password")     { userService.putMyPassword(call) }
+                put("/me/photo")        { userService.putMyPhoto(call) }
+                put("/me/team-logo")    { userService.putMyTeamLogo(call) }  // ← logo tim global
             }
 
-            // ── Matches ───────────────────────────────────────────────────
-            // GET    /matches?search=&result=W&sport=football
-            // POST   /matches
-            // GET    /matches/{id}
-            // PUT    /matches/{id}
-            // DELETE /matches/{id}
             route("/matches") {
-                get            { matchService.getAll(call) }
-                post           { matchService.post(call) }
-                get("/{id}")   { matchService.getById(call) }
-                put("/{id}")   { matchService.put(call) }
-                delete("/{id}") { matchService.delete(call) }
+                get              { matchService.getAll(call) }
+                post             { matchService.post(call) }
+                get("/{id}")     { matchService.getById(call) }
+                put("/{id}")     { matchService.put(call) }
+                put("/{id}/logo")    { matchService.putLogo(call) }      // logo lawan
+                put("/{id}/my-logo") { matchService.putMyLogo(call) }   // ← logo tim per match
+                delete("/{id}")  { matchService.delete(call) }
             }
         }
 
-        // ── Foto profil user ──────────────────────────────────────────────
         route("/images") {
             get("/users/{id}") { userService.getPhoto(call) }
         }
