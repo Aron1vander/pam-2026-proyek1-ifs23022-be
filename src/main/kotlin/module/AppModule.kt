@@ -19,7 +19,7 @@ fun appModule(application: Application) = module {
     // ── Repositories ──────────────────────────────────────────────────────
     single<IUserRepository>         { UserRepository(baseUrl) }
     single<IRefreshTokenRepository> { RefreshTokenRepository() }
-    single<IMatchRepository>        { MatchRepository() }
+    single<IMatchRepository>        { MatchRepository(baseUrl) }
 
     // ── Services ──────────────────────────────────────────────────────────
     single { AuthService(jwtSecret, get(), get()) }
