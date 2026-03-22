@@ -11,14 +11,16 @@ import org.delcom.data.ErrorResponse
 import org.delcom.helpers.JWTConstants
 import org.delcom.helpers.parseMessageToMap
 import org.delcom.services.AuthService
+import org.delcom.services.MatchGoalService
 import org.delcom.services.MatchService
 import org.delcom.services.UserService
 import org.koin.ktor.ext.inject
 
 fun Application.configureRouting() {
-    val authService: AuthService   by inject()
-    val userService: UserService   by inject()
-    val matchService: MatchService by inject()
+    val authService:     AuthService     by inject()
+    val userService:     UserService     by inject()
+    val matchService:    MatchService    by inject()
+    val matchGoalService: MatchGoalService by inject()
 
     install(StatusPages) {
         exception<AppException> { call, cause ->
@@ -33,15 +35,13 @@ fun Application.configureRouting() {
             )
         }
         exception<Throwable> { call, cause ->
-            call.respond(
-                status = HttpStatusCode.fromValue(500),
-                message = ErrorResponse(status = "error", message = cause.message ?: "Unknown error", data = "")
-            )
+            call.respond(HttpStatusCode.fromValue(500),
+                ErrorResponse(status = "error", message = cause.message ?: "Unknown error", data = ""))
         }
     }
 
     routing {
-        get("/") { call.respondText("Match Statistics Log (MatchUp) API by Aron Ivander  — berjalan normal.") }
+        get("/") { call.respondText("Match Statistics Log API(MatchUp) by Aron Ivander Jeconia Hutapea — berjalan normal.") }
 
         route("/auth") {
             post("/register")      { authService.postRegister(call) }
@@ -52,11 +52,11 @@ fun Application.configureRouting() {
 
         authenticate(JWTConstants.NAME) {
             route("/users") {
-                get("/me")              { userService.getMe(call) }
-                put("/me")              { userService.putMe(call) }
-                put("/me/password")     { userService.putMyPassword(call) }
-                put("/me/photo")        { userService.putMyPhoto(call) }
-                put("/me/team-logo")    { userService.putMyTeamLogo(call) }  // ← logo tim global
+                get("/me")           { userService.getMe(call) }
+                put("/me")           { userService.putMe(call) }
+                put("/me/password")  { userService.putMyPassword(call) }
+                put("/me/photo")     { userService.putMyPhoto(call) }
+                put("/me/team-logo") { userService.putMyTeamLogo(call) }
             }
 
             route("/matches") {
@@ -64,9 +64,14 @@ fun Application.configureRouting() {
                 post             { matchService.post(call) }
                 get("/{id}")     { matchService.getById(call) }
                 put("/{id}")     { matchService.put(call) }
-                put("/{id}/logo")    { matchService.putLogo(call) }      // logo lawan
-                put("/{id}/my-logo") { matchService.putMyLogo(call) }   // ← logo tim per match
+                put("/{id}/logo")     { matchService.putLogo(call) }
+                put("/{id}/my-logo")  { matchService.putMyLogo(call) }
                 delete("/{id}")  { matchService.delete(call) }
+
+                // ── Goals ─────────────────────────────────────────────
+                get("/{id}/goals")              { matchGoalService.getGoals(call) }
+                post("/{id}/goals")             { matchGoalService.postGoal(call) }
+                delete("/{id}/goals/{goalId}")  { matchGoalService.deleteGoal(call) }
             }
         }
 
