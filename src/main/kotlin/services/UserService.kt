@@ -20,6 +20,10 @@ import org.delcom.repositories.IUserRepository
 import java.io.File
 import java.util.*
 
+// Format gambar yang diizinkan
+private val ALLOWED_IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png")
+private val ALLOWED_IMAGE_MIME_TYPES = setOf("image/jpeg", "image/jpg", "image/png")
+
 class UserService(
     private val userRepo: IUserRepository,
     private val refreshTokenRepo: IRefreshTokenRepository,
@@ -29,13 +33,13 @@ class UserService(
         val user = ServiceHelper.getAuthUser(call, userRepo)
         call.respond(DataResponse("success", "Berhasil mengambil informasi akun saya",
             mapOf("user" to UserResponse(
-                id        = user.id,
-                name      = user.name,
-                username  = user.username,
-                urlPhoto  = user.urlPhoto,
-                urlTeamLogo = user.urlTeamLogo,   // ← kirim ke client
-                createdAt = user.createdAt,
-                updatedAt = user.updatedAt,
+                id          = user.id,
+                name        = user.name,
+                username    = user.username,
+                urlPhoto    = user.urlPhoto,
+                urlTeamLogo = user.urlTeamLogo,
+                createdAt   = user.createdAt,
+                updatedAt   = user.updatedAt,
             ))
         ))
     }
@@ -66,47 +70,74 @@ class UserService(
         val user = ServiceHelper.getAuthUser(call, userRepo)
         var newPhoto: String? = null
 
-        call.receiveMultipart(formFieldLimit = 1024 * 1024 * 5).forEachPart { part ->
+        call.receiveMultipart(formFieldLimit = 1024 * 1024 * 10).forEachPart { part ->
             if (part is PartData.FileItem) {
-                val ext = part.originalFileName?.substringAfterLast('.', "")
-                    ?.let { if (it.isNotEmpty()) ".$it" else "" } ?: ""
-                val fileName = UUID.randomUUID().toString() + ext
+                // Ambil ekstensi dari originalFileName atau contentType
+                val originalName = part.originalFileName ?: ""
+                val extFromName  = originalName.substringAfterLast('.', "").lowercase()
+                val mimeType     = part.contentType?.toString() ?: ""
+                val extFromMime  = when {
+                    mimeType.contains("jpeg") || mimeType.contains("jpg") -> "jpg"
+                    mimeType.contains("png")  -> "png"
+                    else -> extFromName
+                }
+                val ext = if (extFromMime.isNotBlank()) extFromMime else extFromName
+
+                // Validasi format
+                if (ext.isBlank() || ext !in ALLOWED_IMAGE_EXTENSIONS) {
+                    part.dispose()
+                    throw AppException(400, "Format gambar tidak didukung! Gunakan JPG, JPEG, atau PNG.")
+                }
+
+                val fileName = "${UUID.randomUUID()}.$ext"
                 val filePath = "uploads/users/$fileName"
-                val file = File(filePath).also { it.parentFile.mkdirs() }
+                val file     = File(filePath).also { it.parentFile?.mkdirs() }
                 part.provider().copyAndClose(file.writeChannel())
                 newPhoto = filePath
             }
             part.dispose()
         }
 
-        if (newPhoto == null) throw AppException(404, "Photo profile tidak tersedia!")
-        if (!File(newPhoto!!).exists()) throw AppException(404, "Photo profile gagal diunggah!")
+        if (newPhoto == null) throw AppException(400, "Foto profil tidak tersedia!")
+        if (!File(newPhoto!!).exists()) throw AppException(400, "Foto profil gagal diunggah!")
 
         val oldPhoto = user.photo
-        user.photo = newPhoto
+        user.photo   = newPhoto
         val isUpdated = userRepo.update(user.id, user)
-        if (!isUpdated) throw AppException(400, "Gagal memperbarui photo profile!")
+        if (!isUpdated) throw AppException(400, "Gagal memperbarui foto profil!")
 
         if (oldPhoto != null) {
             val oldFile = File(oldPhoto)
             if (oldFile.exists()) oldFile.delete()
         }
 
-        call.respond(DataResponse("success", "Berhasil mengubah photo profile", null))
+        call.respond(DataResponse("success", "Berhasil mengubah foto profil", null))
     }
 
-    // ← Endpoint baru: upload logo tim global
     suspend fun putMyTeamLogo(call: ApplicationCall) {
         val user = ServiceHelper.getAuthUser(call, userRepo)
         var newLogoPath: String? = null
 
-        call.receiveMultipart(formFieldLimit = 1024 * 1024 * 5).forEachPart { part ->
+        call.receiveMultipart(formFieldLimit = 1024 * 1024 * 10).forEachPart { part ->
             if (part is PartData.FileItem) {
-                val ext = part.originalFileName?.substringAfterLast('.', "")
-                    ?.let { if (it.isNotEmpty()) ".$it" else "" } ?: ""
-                val fileName = UUID.randomUUID().toString() + ext
+                val originalName = part.originalFileName ?: ""
+                val extFromName  = originalName.substringAfterLast('.', "").lowercase()
+                val mimeType     = part.contentType?.toString() ?: ""
+                val extFromMime  = when {
+                    mimeType.contains("jpeg") || mimeType.contains("jpg") -> "jpg"
+                    mimeType.contains("png")  -> "png"
+                    else -> extFromName
+                }
+                val ext = if (extFromMime.isNotBlank()) extFromMime else extFromName
+
+                if (ext.isBlank() || ext !in ALLOWED_IMAGE_EXTENSIONS) {
+                    part.dispose()
+                    throw AppException(400, "Format gambar tidak didukung! Gunakan JPG, JPEG, atau PNG.")
+                }
+
+                val fileName = "${UUID.randomUUID()}.$ext"
                 val filePath = "uploads/team-logos/$fileName"
-                val file = File(filePath).also { it.parentFile.mkdirs() }
+                val file     = File(filePath).also { it.parentFile?.mkdirs() }
                 part.provider().copyAndClose(file.writeChannel())
                 newLogoPath = filePath
             }
@@ -116,7 +147,7 @@ class UserService(
         if (newLogoPath == null) throw AppException(400, "Logo tidak tersedia!")
         if (!File(newLogoPath!!).exists()) throw AppException(400, "Logo gagal diunggah!")
 
-        val oldLogo = user.teamLogo
+        val oldLogo  = user.teamLogo
         user.teamLogo = newLogoPath
         val isUpdated = userRepo.update(user.id, user)
         if (!isUpdated) throw AppException(400, "Gagal menyimpan logo tim!")
@@ -152,11 +183,12 @@ class UserService(
     suspend fun getPhoto(call: ApplicationCall) {
         val userId = call.parameters["id"]
             ?: throw AppException(400, "Data user tidak valid!")
-        val user = userRepo.getById(userId) ?: throw AppException(400, "User not found!")
+        val user = userRepo.getById(userId)
+            ?: throw AppException(400, "User not found!")
 
-        if (user.photo == null) throw AppException(404, "User belum memiliki photo profile")
+        if (user.photo == null) throw AppException(404, "User belum memiliki foto profil")
         val file = File(user.photo!!)
-        if (!file.exists()) throw AppException(404, "Photo profile tidak tersedia")
+        if (!file.exists()) throw AppException(404, "Foto profil tidak tersedia")
         call.respondFile(file)
     }
 }
